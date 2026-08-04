@@ -415,7 +415,7 @@ let activeFilter = "Todos";
 
 function buildWhatsappLink(service){
   const nomeCompleto = service.note ? `${service.name} (${service.note})` : service.name;
-  const mensagem = `Olá! Quero agendar o(a) "${nomeCompleto}", gostaria de saber a disponibilidade por favor?`;
+  const mensagem = `Olá! Vim pelo catálogo e quero agendar o(a) "${nomeCompleto}". Consigo agendar um horário?`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensagem)}`;
 }
 
@@ -479,7 +479,7 @@ renderCatalog();
 
 // Botão flutuante usa o mesmo WHATSAPP_NUMBER definido acima, com mensagem genérica
 document.getElementById('whatsappFloat').href =
-  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá, vim pelo catálogo e gostaria de saber mais sobre os serviços!')}`;
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Vim pelo catálogo do Espaço Sasso e queria saber mais sobre os serviços de vocês!')}`;
 </script>
 
 </body>
