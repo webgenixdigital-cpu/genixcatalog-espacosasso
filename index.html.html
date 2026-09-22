@@ -139,11 +139,57 @@
     background:var(--line);
   }
 
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
-    gap:20px;
+  .carousel-wrap{
+    position:relative;
   }
+
+  .grid{
+    display:flex;
+    flex-wrap:nowrap;
+    gap:20px;
+    overflow-x:auto;
+    scroll-behavior:smooth;
+    padding:2px 2px 14px;
+    scrollbar-width:thin;
+    scrollbar-color:var(--cat-color, var(--maroon)) var(--ivory-2, #F1E9E1);
+  }
+  .grid::-webkit-scrollbar{
+    height:8px;
+  }
+  .grid::-webkit-scrollbar-track{
+    background:#F1E9E1;
+    border-radius:999px;
+  }
+  .grid::-webkit-scrollbar-thumb{
+    background:var(--cat-color, var(--maroon));
+    border-radius:999px;
+  }
+
+  .scroll-btn{
+    position:absolute;
+    top:calc(50% - 7px);
+    transform:translateY(-50%);
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--cat-color, var(--maroon));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 8px 18px -8px rgba(43,35,32,0.35);
+    z-index:5;
+    font-size:16px;
+    transition:background .18s ease, color .18s ease;
+  }
+  .scroll-btn:hover{
+    background:var(--cat-color, var(--maroon));
+    color:#fff;
+  }
+  .scroll-btn.left{ left:-8px; }
+  .scroll-btn.right{ right:-8px; }
 
   .card{
     background:#fff;
@@ -152,6 +198,8 @@
     overflow:hidden;
     display:flex;
     flex-direction:column;
+    flex:0 0 260px;
+    width:260px;
     transition:transform .2s ease, box-shadow .2s ease;
   }
   .card:hover{
@@ -491,36 +539,50 @@ function renderCatalog(){
   const cats = Object.keys(grouped);
   emptyState.style.display = cats.length === 0 ? 'block' : 'none';
 
-  catalogEl.innerHTML = cats.map(cat => {
+  catalogEl.innerHTML = cats.map((cat, idx) => {
     const color = CATEGORY_COLORS[cat] || '';
     const sectionStyle = color ? `style="--cat-color:${color}"` : '';
+    const scrollId = `scroll-${idx}`;
     return `
     <section class="category-block" ${sectionStyle}>
       <h2 class="category-title">${cat}</h2>
-      <div class="grid">
-        ${grouped[cat].map(s => {
-          const label = s.priceLabel === undefined ? "a partir de" : s.priceLabel;
-          const isSpecial = label === "";
-          return `
-          <article class="card">
-            <div class="card-media"></div>
-            <div class="card-body">
-              <h3 class="card-name">${s.name}</h3>
-              ${s.note ? `<p class="card-note">${s.note}</p>` : ''}
-              <p class="card-desc">${s.desc}</p>
-              <div class="card-footer">
-                <div class="price-block ${isSpecial ? 'special' : ''}">
-                  ${label ? `<span class="from">${label}</span>` : ''}
-                  <span class="price">${isSpecial ? s.price : 'R$ ' + s.price}</span>
+      <div class="carousel-wrap">
+        <button class="scroll-btn left" data-scroll="${scrollId}" data-dir="-1" aria-label="Rolar para a esquerda">←</button>
+        <div class="grid" id="${scrollId}">
+          ${grouped[cat].map(s => {
+            const label = s.priceLabel === undefined ? "a partir de" : s.priceLabel;
+            const isSpecial = label === "";
+            return `
+            <article class="card">
+              <div class="card-media"></div>
+              <div class="card-body">
+                <h3 class="card-name">${s.name}</h3>
+                ${s.note ? `<p class="card-note">${s.note}</p>` : ''}
+                <p class="card-desc">${s.desc}</p>
+                <div class="card-footer">
+                  <div class="price-block ${isSpecial ? 'special' : ''}">
+                    ${label ? `<span class="from">${label}</span>` : ''}
+                    <span class="price">${isSpecial ? s.price : 'R$ ' + s.price}</span>
+                  </div>
+                  <a class="btn" href="${buildWhatsappLink(s)}" target="_blank" rel="noopener">Agendar →</a>
                 </div>
-                <a class="btn" href="${buildWhatsappLink(s)}" target="_blank" rel="noopener">Agendar →</a>
               </div>
-            </div>
-          </article>
-        `}).join('')}
+            </article>
+          `}).join('')}
+        </div>
+        <button class="scroll-btn right" data-scroll="${scrollId}" data-dir="1" aria-label="Rolar para a direita">→</button>
       </div>
     </section>
   `}).join('');
+
+  catalogEl.querySelectorAll('.scroll-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const track = document.getElementById(btn.dataset.scroll);
+      const dir = Number(btn.dataset.dir);
+      const cardWidth = 260 + 20; // largura do card + gap
+      track.scrollBy({ left: dir * cardWidth * 2, behavior: 'smooth' });
+    });
+  });
 }
 
 categorySelect.addEventListener('change', () => {
